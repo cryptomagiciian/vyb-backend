@@ -64,7 +64,7 @@ export class AuthController {
         handle: user.handle,
         email: user.email,
         wallet: user.wallet,
-        role: user.role,
+        role: user.role || 'USER',
         avatarUrl: user.avatarUrl,
         region: user.region,
         createdAt: user.createdAt,

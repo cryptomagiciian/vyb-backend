@@ -20,7 +20,9 @@ export class SwipesService {
     request: SwipeRequestDto,
     userId: string,
   ): Promise<SwipeResponseDto> {
-    const { marketId, direction, swipeToken } = request;
+    const marketId = request.marketId;
+    const direction = request.direction;
+    const swipeToken = request.swipeToken;
 
     this.logger.log(`Recording swipe: user=${userId}, market=${marketId}, direction=${direction}`);
 

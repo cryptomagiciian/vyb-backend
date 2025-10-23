@@ -17,21 +17,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       // Main client for general operations
       this.client = new Redis(redisUrl, {
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
 
       // Subscriber for pub/sub
       this.subscriber = new Redis(redisUrl, {
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
 
       // Publisher for pub/sub
       this.publisher = new Redis(redisUrl, {
-        retryDelayOnFailover: 100,
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
@@ -152,6 +149,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client.llen(key);
   }
 
+  async ltrim(key: string, start: number, stop: number): Promise<'OK'> {
+    return this.client.ltrim(key, start, stop);
+  }
+
   // Rate limiting
   async incrementWithExpiry(key: string, ttlSeconds: number): Promise<number> {
     const pipeline = this.client.pipeline();
@@ -159,6 +160,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     pipeline.expire(key, ttlSeconds);
     const results = await pipeline.exec();
     return results[0][1] as number;
+  }
+
+  async checkRateLimit(key: string, options: { limit: number; windowMs: number }): Promise<boolean> {
+    const current = await this.incrementWithExpiry(key, Math.floor(options.windowMs / 1000));
+    return current <= options.limit;
   }
 
   // Pub/Sub

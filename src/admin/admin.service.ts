@@ -69,7 +69,13 @@ export class AdminService {
       return {
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        connectors,
+        connectors: connectors.map(connector => ({
+          name: connector.connector,
+          status: connector.status,
+          lastSuccess: connector.lastSuccess?.toISOString(),
+          lastError: connector.lastError,
+          errorCount: connector.errorCount,
+        })),
         queues: queueStats,
         metrics,
       };
@@ -320,13 +326,7 @@ export class AdminService {
         this.prisma.user.count(),
         this.prisma.marketItem.count(),
         this.prisma.swipe.count(),
-        this.prisma.userStats.count({
-          where: {
-            lastActiveAt: {
-              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
-            },
-          },
-        }),
+        this.prisma.userStats.count(), // Simplified - count all users with stats
       ]);
 
       return {

@@ -53,7 +53,7 @@ export class AuthService {
    * Send magic link for email authentication
    */
   async sendMagicLink(data: MagicLinkRequestDto): Promise<{ success: boolean; message: string }> {
-    const { email } = data;
+    const email = data.email;
 
     try {
       // Check rate limiting
@@ -125,7 +125,7 @@ export class AuthService {
    * Verify magic link token
    */
   async verifyMagicLink(data: MagicLinkVerifyDto): Promise<AuthResult> {
-    const { token } = data;
+    const token = data.token;
 
     try {
       // Get token data from Redis
@@ -217,7 +217,9 @@ export class AuthService {
    * Verify wallet signature
    */
   async verifyWalletSignature(data: WalletVerifyDto): Promise<AuthResult> {
-    const { wallet, signature, message } = data;
+    const wallet = data.wallet;
+    const signature = data.signature;
+    const message = data.message;
 
     try {
       // Verify signature

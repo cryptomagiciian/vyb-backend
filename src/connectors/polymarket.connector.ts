@@ -40,6 +40,11 @@ export class PolymarketConnector extends BaseConnector {
     timeout: 10000,
   };
 
+  constructor(configService: ConfigService) {
+    super(configService);
+    this.initializeHttpClient();
+  }
+
   async fetchMarkets(params: { since?: Date }): Promise<RawMarket[]> {
     try {
       const queryParams = new URLSearchParams({

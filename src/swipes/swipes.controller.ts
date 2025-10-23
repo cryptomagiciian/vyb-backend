@@ -37,7 +37,7 @@ export class SwipesController {
       throw new Error('Rate limit exceeded');
     }
 
-    const result = await this.swipesService.recordSwipe(req.user.sub, request);
+    const result = await this.swipesService.recordSwipe(request, req.user.sub);
     
     return {
       success: true,
@@ -60,8 +60,7 @@ export class SwipesController {
   ) {
     const result = await this.swipesService.getUserSwipeHistory(
       req.user.sub,
-      Math.min(limit, 100),
-      cursor,
+      { limit: Math.min(limit, 100), cursor },
     );
     
     return {

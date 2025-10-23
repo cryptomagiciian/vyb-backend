@@ -27,6 +27,7 @@ model User {
   wallet       String?    @unique
   region       String?
   avatarUrl    String?
+  role         String     @default("USER")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   stats        UserStats?
@@ -64,10 +65,12 @@ model MarketItem {
   id            String   @id @default(cuid())
   source        Source
   sourceId      String   // vendor's id
+  externalId    String   // external market ID from vendor
   question      String
   yesPrice      Float
   noPrice       Float
   volume24h     Float    @default(0)
+  volume        Float    @default(0)  // alias for volume24h
   liquidity     Float    @default(0)
   endDate       DateTime
   priceChange24 Float    @default(0)
@@ -85,6 +88,7 @@ model MarketItem {
 
   swipes Swipe[]
 
+  @@unique([source, externalId], name: "market_external_unique")
   @@index([source, sourceId], name: "market_vendor_idx")
   @@index([confidence, trendScore, endDate], name: "market_rank_idx")
   @@index([eligible], name: "market_eligible_idx")

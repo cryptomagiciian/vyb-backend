@@ -85,10 +85,8 @@ export class ConnectorsService {
     return this.prisma.executeTransaction(async (prisma) => {
       const existing = await prisma.marketItem.findUnique({
         where: {
-          source_externalId: {
-            source: normalized.source.toUpperCase() as any,
-            externalId: normalized.externalId,
-          },
+          source: normalized.source.toUpperCase() as any,
+          externalId: normalized.externalId,
         },
       });
 
@@ -100,7 +98,7 @@ export class ConnectorsService {
             question: normalized.question,
             yesPrice: normalized.yesPrice,
             noPrice: normalized.noPrice,
-            volume: normalized.volume,
+            volume24h: normalized.volume,
             liquidity: normalized.liquidity,
             endDate: new Date(normalized.endDate),
             lastChange24h: normalized.lastChange24h,
@@ -115,11 +113,11 @@ export class ConnectorsService {
         await prisma.marketItem.create({
           data: {
             source: normalized.source.toUpperCase() as any,
-            externalId: normalized.externalId,
+            sourceId: normalized.externalId, // Use sourceId as the external ID
             question: normalized.question,
             yesPrice: normalized.yesPrice,
             noPrice: normalized.noPrice,
-            volume: normalized.volume,
+            volume24h: normalized.volume,
             liquidity: normalized.liquidity,
             endDate: new Date(normalized.endDate),
             lastChange24h: normalized.lastChange24h,

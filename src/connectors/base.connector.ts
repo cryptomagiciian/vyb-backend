@@ -19,6 +19,10 @@ export abstract class BaseConnector implements Connector {
   abstract readonly config: ConnectorConfig;
 
   constructor(protected configService: ConfigService) {
+    // Initialize HTTP client after config is set by subclasses
+  }
+
+  protected initializeHttpClient() {
     this.httpClient = axios.create({
       baseURL: this.config.apiUrl,
       timeout: this.config.timeout,
@@ -164,6 +168,7 @@ export abstract class BaseConnector implements Connector {
         status: 'healthy',
         lastSuccess: new Date(),
         latency,
+        errorCount: this.metrics.failedRequests,
       };
     } catch (error) {
       return {
@@ -174,7 +179,7 @@ export abstract class BaseConnector implements Connector {
     }
   }
 
-  getMetrics(): ConnectorMetrics {
+  async getMetrics(): Promise<ConnectorMetrics> {
     return { ...this.metrics };
   }
 

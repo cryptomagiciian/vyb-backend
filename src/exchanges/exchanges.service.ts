@@ -30,7 +30,7 @@ export class ExchangesService {
         select: {
           id: true,
           source: true,
-          externalId: true,
+          sourceId: true,
           exchanges: true,
           yesPrice: true,
           noPrice: true,
@@ -56,8 +56,8 @@ export class ExchangesService {
           name: market.source === 'POLYMARKET' ? 'Polymarket' : 'Kalshi',
           url: this.addUTMParams(
             market.source === 'POLYMARKET' 
-              ? `https://polymarket.com/market/${market.externalId}`
-              : `https://kalshi.com/markets/${market.externalId}`,
+              ? `https://polymarket.com/market/${market.sourceId}`
+              : `https://kalshi.com/markets/${market.sourceId}`,
             market.source,
             userId
           ),

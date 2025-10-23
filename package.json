@@ -75,7 +75,9 @@
     "siwe": "^2.1.4",
     "uuid": "^9.0.1",
     "cuid": "^2.1.8",
-    "openapi-typescript": "^6.7.3"
+    "openapi-typescript": "^6.7.3",
+    "nestjs-zod": "^3.0.0",
+    "passport-custom": "^1.1.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
