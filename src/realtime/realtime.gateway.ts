@@ -11,7 +11,6 @@ import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { RealtimeService } from './realtime.service';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -44,7 +43,6 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-    private realtimeService: RealtimeService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {

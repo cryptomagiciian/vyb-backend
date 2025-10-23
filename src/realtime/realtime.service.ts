@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RealtimeGateway } from './realtime.gateway';
 import { RedisService } from '../common/redis/redis.service';
 
 @Injectable()
@@ -7,7 +6,6 @@ export class RealtimeService {
   private readonly logger = new Logger(RealtimeService.name);
 
   constructor(
-    private realtimeGateway: RealtimeGateway,
     private redis: RedisService,
   ) {}
 
@@ -16,19 +14,16 @@ export class RealtimeService {
    */
   async broadcastNewMarket(market: any, segment: string = 'default'): Promise<void> {
     try {
-      // Broadcast via WebSocket
-      await this.realtimeGateway.broadcastNewMarket(market, segment);
-      
-      // Also publish to Redis for other instances
+      // Publish to Redis for cross-instance communication
       await this.redis.publish('market:new', JSON.stringify({
         market,
         segment,
         timestamp: new Date().toISOString(),
       }));
       
-      this.logger.log(`Broadcasted new market ${market.id} to segment ${segment}`);
+      this.logger.log(`Published new market ${market.id} to segment ${segment}`);
     } catch (error) {
-      this.logger.error(`Failed to broadcast new market:`, error);
+      this.logger.error(`Failed to publish new market:`, error);
     }
   }
 
@@ -37,19 +32,16 @@ export class RealtimeService {
    */
   async broadcastMarketUpdate(market: any, segment: string = 'default'): Promise<void> {
     try {
-      // Broadcast via WebSocket
-      await this.realtimeGateway.broadcastMarketUpdate(market, segment);
-      
-      // Also publish to Redis for other instances
+      // Publish to Redis for cross-instance communication
       await this.redis.publish('market:update', JSON.stringify({
         market,
         segment,
         timestamp: new Date().toISOString(),
       }));
       
-      this.logger.log(`Broadcasted market update ${market.id} to segment ${segment}`);
+      this.logger.log(`Published market update ${market.id} to segment ${segment}`);
     } catch (error) {
-      this.logger.error(`Failed to broadcast market update:`, error);
+      this.logger.error(`Failed to publish market update:`, error);
     }
   }
 
@@ -63,11 +55,16 @@ export class RealtimeService {
     data?: any;
   }): Promise<void> {
     try {
-      await this.realtimeGateway.sendUserNotification(userId, notification);
+      // Publish to Redis for cross-instance communication
+      await this.redis.publish('user:notification', JSON.stringify({
+        userId,
+        notification,
+        timestamp: new Date().toISOString(),
+      }));
       
-      this.logger.log(`Sent notification to user ${userId}: ${notification.type}`);
+      this.logger.log(`Published notification to user ${userId}: ${notification.type}`);
     } catch (error) {
-      this.logger.error(`Failed to send notification to user ${userId}:`, error);
+      this.logger.error(`Failed to publish notification to user ${userId}:`, error);
     }
   }
 
@@ -127,10 +124,12 @@ export class RealtimeService {
     lastActivity: Date;
   }> {
     try {
-      const stats = this.realtimeGateway.getConnectionStats();
-      
+      // For now, return basic stats since we can't access gateway directly
+      // In a real implementation, this would be stored in Redis or a shared state
       return {
-        ...stats,
+        totalConnections: 0,
+        authenticatedConnections: 0,
+        segments: new Map(),
         lastActivity: new Date(),
       };
     } catch (error) {
