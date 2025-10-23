@@ -28,7 +28,7 @@ export class FeedController {
     const rateLimitKey = this.rateLimitService.generateKey(req, 'anonymous');
     const isAllowed = await this.rateLimitService.checkRateLimit(
       rateLimitKey,
-      { ...RateLimitService.CONFIGS.FEED, limit: 100 }, // More lenient for public
+      { ...RateLimitService.CONFIGS.FEED, maxRequests: 200 }, // More lenient for public
     );
 
     if (!isAllowed) {
