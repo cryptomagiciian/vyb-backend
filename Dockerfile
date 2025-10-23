@@ -12,8 +12,14 @@ WORKDIR /app
 
 # Rebuild the source code only when needed
 FROM base AS builder
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# Install all dependencies (including dev dependencies for build)
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy source code
 COPY . .
 
 # Generate Prisma client
@@ -45,6 +51,6 @@ ENV PORT=8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:8080/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 CMD ["node", "dist/main.js"]
