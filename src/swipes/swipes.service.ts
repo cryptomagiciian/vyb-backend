@@ -404,7 +404,7 @@ export class SwipesService {
       });
 
       const streak = stats?.currentStreak || 0;
-      await this.redis.set(`user:${userId}:streak`, streak, 3600);
+      await this.redis.set(`user:${userId}:streak`, streak.toString(), 3600);
       return streak;
     } catch (error) {
       this.logger.error(`Failed to get user streak for ${userId}:`, error);
@@ -467,7 +467,7 @@ export class SwipesService {
    */
   private async updateStreakCache(userId: string, streak: number): Promise<void> {
     try {
-      await this.redis.set(`user:${userId}:streak`, streak, 3600); // 1 hour TTL
+      await this.redis.set(`user:${userId}:streak`, streak.toString(), 3600); // 1 hour TTL
     } catch (error) {
       this.logger.warn(`Failed to update streak cache for user ${userId}:`, error);
     }

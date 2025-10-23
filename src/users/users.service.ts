@@ -104,7 +104,7 @@ export class UsersService {
       streak,
       bestStreak: stats.bestStreak,
       accuracy: stats.accuracy,
-      lastActiveAt: new Date(), // Use current time as last active
+      lastActiveAt: new Date(), // Use current time as last active (computed field)
     };
   }
 
@@ -244,10 +244,8 @@ export class UsersService {
    */
   async updateLastActive(userId: string): Promise<void> {
     try {
-      await this.prisma.userStats.update({
-        where: { userId },
-        data: { lastActiveAt: new Date() },
-      });
+      // Update last active timestamp in Redis instead of database
+      await this.redis.set(`user:${userId}:lastActive`, new Date().toISOString(), 86400); // 24 hours TTL
     } catch (error) {
       this.logger.error(`Failed to update last active for user ${userId}:`, error);
     }

@@ -33,7 +33,7 @@ export class InsightsService {
   ): Promise<string | null> {
     try {
       // Check if insights are enabled
-      if (!this.configService.get('ENABLE_INSIGHTS', 'true') === 'true') {
+      if (this.configService.get('ENABLE_INSIGHTS', 'true') !== 'true') {
         this.logger.log('Insights generation is disabled');
         return null;
       }
