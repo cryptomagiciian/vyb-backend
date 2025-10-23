@@ -116,6 +116,7 @@ export class ConnectorsService {
           data: {
             source: normalized.source.toUpperCase() as any,
             sourceId: normalized.externalId, // Use sourceId as the external ID
+            externalId: normalized.externalId, // Add externalId field
             question: normalized.question,
             yesPrice: normalized.yesPrice,
             noPrice: normalized.noPrice,

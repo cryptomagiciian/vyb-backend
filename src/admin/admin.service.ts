@@ -70,7 +70,7 @@ export class AdminService {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         connectors: connectors.map(connector => ({
-          name: connector.connector,
+          name: (connector as any).connector,
           status: connector.status,
           lastSuccess: connector.lastSuccess?.toISOString(),
           lastError: connector.lastError,
