@@ -22,7 +22,7 @@ export class FeedService {
     userId?: string,
   ): Promise<FeedResponseDto> {
     const cursor = request.cursor;
-    const limit = request.limit;
+    const limit = Number(request.limit); // Convert to number
     const tags = request.tags;
     
     this.logger.log(`Getting next markets: limit=${limit}, cursor=${cursor}, tags=${tags?.join(',')}`);
