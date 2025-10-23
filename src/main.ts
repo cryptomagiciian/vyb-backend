@@ -42,22 +42,33 @@ async function bootstrap() {
   // CORS configuration
   const corsOrigin = config.get('CORS_ORIGIN');
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' 
-      ? [
-          corsOrigin,
-          'https://lovable.dev',
-          'https://*.lovable.dev',
-          'https://*.lovable.app',
-          'https://*.lovableproject.com'
-        ]
-      : [
-          'http://localhost:3000',
-          'http://localhost:3001', 
-          'https://lovable.dev',
-          'https://*.lovable.dev',
-          'https://*.lovable.app',
-          'https://*.lovableproject.com'
-        ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Allow localhost for development
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+      
+      // Allow any Lovable domain
+      if (origin.includes('lovable.dev') || origin.includes('lovable.app') || origin.includes('lovableproject.com')) {
+        return callback(null, true);
+      }
+      
+      // Allow custom CORS origin if set
+      if (corsOrigin && origin === corsOrigin) {
+        return callback(null, true);
+      }
+      
+      // Allow all origins in development
+      if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      
+      // Reject other origins in production
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'Idempotency-Key', 'X-Device-Fingerprint'],
