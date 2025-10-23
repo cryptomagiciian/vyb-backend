@@ -22,7 +22,7 @@ import { ResolutionModule } from '../resolution/resolution.module';
     ConnectorsModule,
     forwardRef(() => RankingModule),
     forwardRef(() => InsightsModule),
-    ResolutionModule,
+    forwardRef(() => ResolutionModule),
   ],
   providers: [
     IngestionProcessor,

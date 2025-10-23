@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ResolutionService } from './resolution.service';
 import { ResolutionController } from './resolution.controller';
 import { PrismaModule } from '../common/prisma/prisma.module';
@@ -9,7 +9,7 @@ import { JobsModule } from '../jobs/jobs.module';
   imports: [
     PrismaModule,
     ConnectorsModule,
-    JobsModule,
+    forwardRef(() => JobsModule),
   ],
   providers: [ResolutionService],
   controllers: [ResolutionController],
