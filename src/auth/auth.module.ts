@@ -9,10 +9,14 @@ import { MagicLinkStrategy } from './strategies/magic-link.strategy';
 import { WalletStrategy } from './strategies/wallet.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminGuard } from './guards/admin.guard';
+import { PrismaModule } from '../common/prisma/prisma.module';
+import { RedisModule } from '../common/redis/redis.module';
 
 @Module({
   imports: [
     PassportModule,
+    PrismaModule,
+    RedisModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
