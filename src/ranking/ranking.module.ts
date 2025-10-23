@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { RankingService } from './ranking.service';
 import { RankingController } from './ranking.controller';
+import { RankingAlgoService } from './ranking-algo.service';
 
 @Module({
-  providers: [RankingService],
+  imports: [ConfigModule],
+  providers: [RankingService, RankingAlgoService],
   controllers: [RankingController],
-  exports: [RankingService],
+  exports: [RankingService, RankingAlgoService],
 })
 export class RankingModule {}
