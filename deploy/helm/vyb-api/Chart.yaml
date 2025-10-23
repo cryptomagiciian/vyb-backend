@@ -1,0 +1,17 @@
+apiVersion: v2
+name: vyb-api
+description: VYB - Real-time discovery feed for Polymarket/Kalshi markets
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - prediction-markets
+  - real-time
+  - feed
+  - api
+home: https://vyb.app
+sources:
+  - https://github.com/vyb/vyb-backend
+maintainers:
+  - name: VYB Team
+    email: team@vyb.app

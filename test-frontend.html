@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VYB Backend Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 VYB Backend Integration Test</h1>
+        
+        <div class="test-section">
+            <h3>🔗 Connection Test</h3>
+            <button onclick="testConnection()">Test API Connection</button>
+            <div id="connection-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Authentication Test</h3>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="test-email" value="test@example.com" placeholder="Enter email">
+            </div>
+            <button onclick="testMagicLink()">Test Magic Link</button>
+            <button onclick="testWalletAuth()">Test Wallet Auth</button>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Feed Test</h3>
+            <div class="form-group">
+                <label>Auth Token:</label>
+                <input type="text" id="auth-token" placeholder="Enter JWT token">
+            </div>
+            <button onclick="testFeed()">Test Feed</button>
+            <button onclick="testFeedStats()">Test Feed Stats</button>
+            <div id="feed-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👆 Swipe Test</h3>
+            <div class="form-group">
+                <label>Market ID:</label>
+                <input type="text" id="market-id" placeholder="Enter market ID">
+            </div>
+            <div class="form-group">
+                <label>Direction:</label>
+                <select id="swipe-direction">
+                    <option value="LEFT">LEFT</option>
+                    <option value="RIGHT">RIGHT</option>
+                </select>
+            </div>
+            <button onclick="testSwipe()">Test Swipe</button>
+            <button onclick="testSwipeHistory()">Test Swipe History</button>
+            <div id="swipe-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👤 User Test</h3>
+            <button onclick="testUserProfile()">Test User Profile</button>
+            <button onclick="testUserStats()">Test User Stats</button>
+            <div id="user-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔌 WebSocket Test</h3>
+            <button onclick="testWebSocket()">Test WebSocket Connection</button>
+            <button onclick="disconnectWebSocket()">Disconnect</button>
+            <div id="websocket-result"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let socket = null;
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'ok') {
+                    showResult('connection-result', `✅ API is healthy\nStatus: ${data.status}\nService: ${data.service}`, 'success');
+                } else {
+                    showResult('connection-result', `❌ API returned unexpected response: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('connection-result', `❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMagicLink() {
+            const email = document.getElementById('test-email').value;
+            if (!email) {
+                showResult('auth-result', '❌ Please enter an email address', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/magic-link`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('auth-result', `✅ Magic link request successful\nMessage: ${data.message}`, 'success');
+                } else {
+                    showResult('auth-result', `❌ Magic link request failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('auth-result', `❌ Magic link test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWalletAuth() {
+            const wallet = '0x1234567890123456789012345678901234567890';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/wallet/challenge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ wallet })
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.message) {
+                    showResult('auth-result', `✅ Wallet challenge generated\nMessage: ${data.message.substring(0, 100)}...`, 'success');
+                } else {
+                    showResult('auth-result', `❌ Wallet challenge failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('auth-result', `❌ Wallet auth test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFeed() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('feed-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/feed/next?limit=5`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('feed-result', `✅ Feed retrieved successfully\nItems: ${data.items?.length || 0}\nHas More: ${data.hasMore}`, 'success');
+                } else {
+                    showResult('feed-result', `❌ Feed request failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('feed-result', `❌ Feed test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFeedStats() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('feed-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/feed/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('feed-result', `✅ Feed stats retrieved\nTotal Markets: ${data.stats?.totalMarkets || 0}\nEligible: ${data.stats?.eligibleMarkets || 0}`, 'success');
+                } else {
+                    showResult('feed-result', `❌ Feed stats failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('feed-result', `❌ Feed stats test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSwipe() {
+            const token = document.getElementById('auth-token').value;
+            const marketId = document.getElementById('market-id').value;
+            const direction = document.getElementById('swipe-direction').value;
+
+            if (!token || !marketId) {
+                showResult('swipe-result', '❌ Please enter auth token and market ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/swipe`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        marketId, 
+                        direction,
+                        idempotencyKey: `test-${Date.now()}`
+                    })
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('swipe-result', `✅ Swipe recorded successfully\nXP Gained: ${data.xpGained}\nStreak: ${data.streak}`, 'success');
+                } else {
+                    showResult('swipe-result', `❌ Swipe failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('swipe-result', `❌ Swipe test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSwipeHistory() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('swipe-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/swipe/history?limit=10`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('swipe-result', `✅ Swipe history retrieved\nSwipes: ${data.swipes?.length || 0}\nHas More: ${data.hasMore}`, 'success');
+                } else {
+                    showResult('swipe-result', `❌ Swipe history failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('swipe-result', `❌ Swipe history test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserProfile() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('user-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('user-result', `✅ User profile retrieved\nHandle: ${data.profile?.handle}\nRole: ${data.profile?.role}`, 'success');
+                } else {
+                    showResult('user-result', `❌ User profile failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('user-result', `❌ User profile test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserStats() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('user-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/user/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult('user-result', `✅ User stats retrieved\nXP: ${data.stats?.xp}\nStreak: ${data.stats?.streak}\nAccuracy: ${data.stats?.accuracy}`, 'success');
+                } else {
+                    showResult('user-result', `❌ User stats failed: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                showResult('user-result', `❌ User stats test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testWebSocket() {
+            const token = document.getElementById('auth-token').value;
+            if (!token) {
+                showResult('websocket-result', '❌ Please enter an auth token', 'error');
+                return;
+            }
+
+            try {
+                socket = io(`${API_BASE}/realtime`, {
+                    auth: { token: `Bearer ${token}` }
+                });
+
+                socket.on('connect', () => {
+                    showResult('websocket-result', '✅ Connected to WebSocket successfully', 'success');
+                });
+
+                socket.on('connect_error', (error) => {
+                    showResult('websocket-result', `❌ WebSocket connection failed: ${error.message}`, 'error');
+                });
+
+                socket.on('market:new', (data) => {
+                    showResult('websocket-result', `📱 New market received: ${data.market?.question?.substring(0, 50)}...`, 'info');
+                });
+
+                socket.on('market:update', (data) => {
+                    showResult('websocket-result', `🔄 Market update received: ${data.market?.id}`, 'info');
+                });
+
+                socket.on('notification', (data) => {
+                    showResult('websocket-result', `🔔 Notification: ${data.title} - ${data.message}`, 'info');
+                });
+
+            } catch (error) {
+                showResult('websocket-result', `❌ WebSocket test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (socket) {
+                socket.disconnect();
+                showResult('websocket-result', '🔌 WebSocket disconnected', 'info');
+            }
+        }
+
+        // Auto-test connection on page load
+        window.onload = () => {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

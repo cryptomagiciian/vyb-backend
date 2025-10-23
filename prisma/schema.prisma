@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Source {
+  POLYMARKET
+  KALSHI
+}
+
+enum Direction {
+  LEFT
+  RIGHT
+}
+
+model User {
+  id           String     @id @default(cuid())
+  handle       String     @unique
+  email        String?    @unique
+  wallet       String?    @unique
+  region       String?
+  avatarUrl    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  stats        UserStats?
+  swipes       Swipe[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model UserStats {
+  userId        String   @id
+  totalSwipes   Int      @default(0)
+  rightSwipes   Int      @default(0)
+  bestStreak    Int      @default(0)
+  currentStreak Int      @default(0)
+  xp            Int      @default(0)
+  accuracy      Float    @default(0)  // resolved bets alignment, filled later
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  jwtId     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model MarketItem {
+  id            String   @id @default(cuid())
+  source        Source
+  sourceId      String   // vendor's id
+  question      String
+  yesPrice      Float
+  noPrice       Float
+  volume24h     Float    @default(0)
+  liquidity     Float    @default(0)
+  endDate       DateTime
+  priceChange24 Float    @default(0)
+  mentionScore  Float    @default(0)  // social velocity
+  confidence    Float    @default(0)  // our score 0..1
+  trendScore    Float    @default(0)
+  tags          String[]
+  insight       String?
+  exchanges     Json      // [{name:"Polymarket", url:"..."}, {name:"Kalshi", url:"..."}]
+  featuredAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  swipes Swipe[]
+
+  @@index([source, sourceId], name: "market_vendor_idx")
+  @@index([confidence, trendScore, endDate], name: "market_rank_idx")
+  @@map("market_items")
+}
+
+model Swipe {
+  id          String     @id @default(cuid())
+  userId      String
+  marketId    String
+  direction   Direction
+  createdAt   DateTime   @default(now())
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market      MarketItem @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, marketId]) // single swipe per user per market
+  @@map("swipes")
+}
+
+model FeatureFlag {
+  key       String   @id
+  enabled   Boolean  @default(false)
+  payload   Json?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("feature_flags")
+}
+
+model ConnectorHealth {
+  id          String   @id @default(cuid())
+  connector   String   // 'polymarket' | 'kalshi'
+  status      String   // 'healthy' | 'degraded' | 'down'
+  lastSuccess DateTime?
+  lastError   String?
+  errorCount  Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([connector])
+  @@map("connector_health")
+}
+
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  userId    String?
+  operation String   // 'swipe', 'bet', etc.
+  result    Json?    // cached result
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}

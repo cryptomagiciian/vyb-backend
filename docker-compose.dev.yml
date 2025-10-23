@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vyb-postgres-dev
+    environment:
+      POSTGRES_DB: vyb_dev
+      POSTGRES_USER: vyb_user
+      POSTGRES_PASSWORD: vyb_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vyb_user -d vyb_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: vyb-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # VYB API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vyb-api-dev
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      DATABASE_URL: postgresql://vyb_user:vyb_password@postgres:5432/vyb_dev?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      MAGIC_LINK_SECRET: dev-magic-link-secret
+      MAGIC_LINK_FROM_EMAIL: noreply@vyb.dev
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      POLYMARKET_API_URL: https://api.polymarket.com
+      KALSHI_API_URL: https://api.kalshi.com
+      ENABLE_INSIGHTS: "true"
+      ENABLE_REALTIME: "true"
+      ENABLE_OTEL: "false"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander (for Redis management)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: vyb-redis-commander-dev
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:
