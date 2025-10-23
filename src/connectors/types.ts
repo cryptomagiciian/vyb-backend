@@ -8,11 +8,12 @@ export interface RawMarket {
   endDate: string; // ISO string
   lastChange24h?: number;
   tags: string[];
+  description?: string;
   metadata?: Record<string, any>;
 }
 
 export interface NormalizedMarket {
-  source: 'polymarket' | 'kalshi';
+  source: 'polymarket' | 'kalshi' | 'mock';
   externalId: string;
   question: string;
   yesPrice: number;
@@ -22,6 +23,7 @@ export interface NormalizedMarket {
   endDate: string; // ISO string
   lastChange24h?: number;
   tags: string[];
+  description?: string;
   exchanges: ExchangeInfo[];
 }
 
@@ -64,7 +66,7 @@ export interface ConnectorMetrics {
 }
 
 export abstract class Connector {
-  abstract readonly name: 'polymarket' | 'kalshi';
+  abstract readonly name: 'polymarket' | 'kalshi' | 'mock';
   abstract readonly config: ConnectorConfig;
   
   abstract fetchMarkets(params: { since?: Date }): Promise<RawMarket[]>;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseConnector } from './base.connector';
-import { RawMarket, NormalizedMarket, ConnectorConfig } from './types';
+import { RawMarket, NormalizedMarket, ConnectorConfig, ConnectorHealth, ConnectorMetrics } from './types';
 
 @Injectable()
 export class MockConnector extends BaseConnector {
@@ -34,7 +34,7 @@ export class MockConnector extends BaseConnector {
         noPrice: 0.35,
         volume: 1500000,
         liquidity: 500000,
-        endDate: new Date('2024-12-31T23:59:59Z'),
+        endDate: '2024-12-31T23:59:59Z',
         lastChange24h: 0.05,
         tags: ['crypto', 'bitcoin', 'price'],
         description: 'Prediction market on Bitcoin price target',
@@ -46,7 +46,7 @@ export class MockConnector extends BaseConnector {
         noPrice: 0.75,
         volume: 800000,
         liquidity: 300000,
-        endDate: new Date('2024-12-31T23:59:59Z'),
+        endDate: '2024-12-31T23:59:59Z',
         lastChange24h: -0.02,
         tags: ['economics', 'recession', 'us'],
         description: 'Economic prediction market',
@@ -58,7 +58,7 @@ export class MockConnector extends BaseConnector {
         noPrice: 0.85,
         volume: 1200000,
         liquidity: 400000,
-        endDate: new Date('2025-12-31T23:59:59Z'),
+        endDate: '2025-12-31T23:59:59Z',
         lastChange24h: 0.03,
         tags: ['ai', 'agi', 'technology'],
         description: 'Artificial General Intelligence prediction',
@@ -70,7 +70,7 @@ export class MockConnector extends BaseConnector {
         noPrice: 0.55,
         volume: 900000,
         liquidity: 350000,
-        endDate: new Date('2024-12-31T23:59:59Z'),
+        endDate: '2024-12-31T23:59:59Z',
         lastChange24h: -0.01,
         tags: ['stocks', 'tesla', 'price'],
         description: 'Tesla stock price prediction',
@@ -82,7 +82,7 @@ export class MockConnector extends BaseConnector {
         noPrice: 0.92,
         volume: 200000,
         liquidity: 100000,
-        endDate: new Date('2024-12-31T23:59:59Z'),
+        endDate: '2024-12-31T23:59:59Z',
         lastChange24h: 0.01,
         tags: ['natural-disasters', 'earthquake', 'california'],
         description: 'Natural disaster prediction market',
@@ -105,6 +105,14 @@ export class MockConnector extends BaseConnector {
       lastChange24h: raw.lastChange24h,
       tags: raw.tags,
       description: raw.description,
+      exchanges: [
+        {
+          name: 'Mock Exchange',
+          url: 'https://mock-exchange.com',
+          oddsYes: raw.yesPrice,
+          oddsNo: raw.noPrice,
+        },
+      ],
     };
   }
 
@@ -120,6 +128,25 @@ export class MockConnector extends BaseConnector {
       lastChange24h: market.lastChange24h,
       tags: market.tags,
       description: market.description,
+    };
+  }
+
+  async getHealth(): Promise<ConnectorHealth> {
+    return {
+      status: 'healthy',
+      lastSuccess: new Date(),
+      errorCount: 0,
+      latency: 10,
+    };
+  }
+
+  async getMetrics(): Promise<ConnectorMetrics> {
+    return {
+      totalRequests: 1,
+      successfulRequests: 1,
+      failedRequests: 0,
+      averageLatency: 10,
+      lastUpdated: new Date(),
     };
   }
 }
