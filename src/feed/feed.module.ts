@@ -4,12 +4,14 @@ import { FeedController } from './feed.controller';
 import { PrismaModule } from '../common/prisma/prisma.module';
 import { RedisModule } from '../common/redis/redis.module';
 import { RankingModule } from '../ranking/ranking.module';
+import { RateLimitModule } from '../common/rate-limit/rate-limit.module';
 
 @Module({
   imports: [
     PrismaModule,
     RedisModule,
     RankingModule,
+    RateLimitModule,
   ],
   providers: [FeedService],
   controllers: [FeedController],
