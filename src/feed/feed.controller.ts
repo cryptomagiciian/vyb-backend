@@ -14,30 +14,28 @@ export class FeedController {
   ) {}
 
   @Get('next')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get next batch of markets for the feed' })
+  @ApiOperation({ summary: 'Get next batch of markets for the feed (public)' })
   @ApiResponse({ status: 200, description: 'Markets retrieved successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
   @ApiQuery({ name: 'cursor', required: false, description: 'Pagination cursor' })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of markets to return (1-20)', type: Number })
-  @ApiQuery({ name: 'segment', required: false, description: 'Feed segment (default, crypto, politics, etc.)' })
+  @ApiQuery({ name: 'tags', required: false, description: 'Filter by tags' })
   async getNextMarkets(
     @Query() query: FeedRequestDto,
     @Request() req,
   ) {
-    // Rate limiting
-    const rateLimitKey = this.rateLimitService.generateKey(req, req.user?.sub);
+    // Rate limiting (less strict for public access)
+    const rateLimitKey = this.rateLimitService.generateKey(req, 'anonymous');
     const isAllowed = await this.rateLimitService.checkRateLimit(
       rateLimitKey,
-      RateLimitService.CONFIGS.FEED,
+      { ...RateLimitService.CONFIGS.FEED, limit: 100 }, // More lenient for public
     );
 
     if (!isAllowed) {
       throw new Error('Rate limit exceeded');
     }
 
+    // Allow unauthenticated access to feed
     const result = await this.feedService.getNextMarkets(query, req.user?.sub);
     
     return {
@@ -67,18 +65,13 @@ export class FeedController {
   }
 
   @Get('stats')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get feed statistics' })
+  @ApiOperation({ summary: 'Get feed statistics (public)' })
   @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiQuery({ name: 'segment', required: false, description: 'Feed segment' })
-  async getFeedStats(@Query('segment') segment: string = 'default') {
+  async getFeedStats() {
     const stats = await this.feedService.getFeedStats();
     
     return {
       success: true,
-      segment,
       stats,
     };
   }
