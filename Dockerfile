@@ -7,8 +7,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
     # Install dependencies based on the preferred package manager
-    COPY package.json ./
-    RUN npm install --omit=dev
+    COPY package.json package-lock.json ./
+    RUN npm ci --omit=dev
 
 # Rebuild the source code only when needed
 FROM base AS builder
