@@ -44,6 +44,25 @@ export class AdminController {
     };
   }
 
+  @Post('ingest')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Trigger market data ingestion from connectors (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Ingestion triggered successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Admin access required' })
+  async triggerIngestion(
+    @Query('connector') connector?: 'polymarket' | 'kalshi',
+    @Query('force') force: boolean = false,
+  ) {
+    const result = await this.adminService.triggerIngestion(connector, force);
+    
+    return {
+      success: true,
+      ...result,
+    };
+  }
+
   @Get('flags')
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth()

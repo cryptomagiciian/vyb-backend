@@ -413,4 +413,48 @@ export class AdminService {
       throw error;
     }
   }
+
+  /**
+   * Trigger market data ingestion from connectors
+   */
+  async triggerIngestion(connector?: 'polymarket' | 'kalshi', force: boolean = false): Promise<{
+    success: boolean;
+    message: string;
+    jobId: string;
+    connector?: string;
+  }> {
+    try {
+      this.logger.log(`Triggering ingestion${connector ? ` for ${connector}` : ' for all connectors'}`);
+
+      // Add job to ingestion queue
+      const job = await this.ingestionQueue.add('pull', {
+        connector,
+        force,
+      }, {
+        priority: 1, // High priority for manual triggers
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      });
+
+      this.logger.log(`Ingestion job queued with ID: ${job.id}`);
+
+      return {
+        success: true,
+        message: `Ingestion triggered successfully${connector ? ` for ${connector}` : ''}`,
+        jobId: job.id.toString(),
+        connector,
+      };
+    } catch (error) {
+      this.logger.error('Failed to trigger ingestion:', error);
+      return {
+        success: false,
+        message: 'Failed to trigger ingestion',
+        jobId: '',
+        connector,
+      };
+    }
+  }
 }
