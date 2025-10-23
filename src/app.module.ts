@@ -16,7 +16,7 @@ import { ExchangesModule } from './exchanges/exchanges.module';
 import { ResolutionModule } from './resolution/resolution.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { AdminModule } from './admin/admin.module';
-import { HealthController } from './common/health/health.controller';
+import { HealthModule } from './common/health/health.module';
 import { JobsModule } from './jobs/jobs.module';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
@@ -58,9 +58,8 @@ import { RateLimitInterceptor } from './common/interceptors/rate-limit.intercept
     RateLimitModule,
 
     // Health checks
-    TerminusModule,
+    HealthModule,
   ],
-  controllers: [HealthController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
