@@ -3,7 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-import compression from 'compression';
+import * as compression from 'compression';
 import { AppModule } from './app.module';
 import { setupTracing } from './common/tracing';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
