@@ -5,6 +5,10 @@ import { RankingProcessor } from './processors/ranking.processor';
 import { InsightsProcessor } from './processors/insights.processor';
 import { ResolutionProcessor } from './processors/resolution.processor';
 import { AnalyticsProcessor } from './processors/analytics.processor';
+import { ConnectorsModule } from '../connectors/connectors.module';
+import { RankingModule } from '../ranking/ranking.module';
+import { InsightsModule } from '../insights/insights.module';
+import { ResolutionModule } from '../resolution/resolution.module';
 
 @Module({
   imports: [
@@ -15,6 +19,10 @@ import { AnalyticsProcessor } from './processors/analytics.processor';
       { name: 'resolution' },
       { name: 'analytics' },
     ),
+    ConnectorsModule,
+    RankingModule,
+    InsightsModule,
+    ResolutionModule,
   ],
   providers: [
     IngestionProcessor,
