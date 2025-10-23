@@ -39,7 +39,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Install OpenSSL and other required libraries for Prisma
-RUN apk add --no-cache openssl libssl1.1
+RUN apk add --no-cache openssl ca-certificates
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
