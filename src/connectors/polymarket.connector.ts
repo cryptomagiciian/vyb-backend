@@ -28,7 +28,7 @@ interface PolymarketResponse {
 export class PolymarketConnector extends BaseConnector {
   readonly name = 'polymarket' as const;
   readonly config: ConnectorConfig = {
-    apiUrl: this.configService.get('POLYMARKET_API_URL', 'https://api.polymarket.com'),
+    apiUrl: this.configService.get('POLYMARKET_API_URL', 'https://gamma-api.polymarket.com'),
     rateLimit: {
       requestsPerMinute: 60,
       burstLimit: 10,

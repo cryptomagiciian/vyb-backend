@@ -26,7 +26,7 @@ interface KalshiResponse {
 export class KalshiConnector extends BaseConnector {
   readonly name = 'kalshi' as const;
   readonly config: ConnectorConfig = {
-    apiUrl: this.configService.get('KALSHI_API_URL', 'https://api.kalshi.com'),
+    apiUrl: this.configService.get('KALSHI_API_URL', 'https://trading-api.kalshi.com'),
     rateLimit: {
       requestsPerMinute: 60,
       burstLimit: 10,

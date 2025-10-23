@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PolymarketConnector } from './polymarket.connector';
 import { KalshiConnector } from './kalshi.connector';
+import { MockConnector } from './mock.connector';
 import { Connector, NormalizedMarket, ConnectorHealth } from './types';
 
 @Injectable()
@@ -13,8 +14,9 @@ export class ConnectorsService {
     private prisma: PrismaService,
     private polymarketConnector: PolymarketConnector,
     private kalshiConnector: KalshiConnector,
+    private mockConnector: MockConnector,
   ) {
-    this.connectors = [polymarketConnector, kalshiConnector];
+    this.connectors = [mockConnector, polymarketConnector, kalshiConnector];
   }
 
   /**
