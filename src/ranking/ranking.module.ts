@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RankingService } from './ranking.service';
 import { RankingController } from './ranking.controller';
@@ -12,7 +12,7 @@ import { JobsModule } from '../jobs/jobs.module';
     ConfigModule,
     PrismaModule,
     RedisModule,
-    JobsModule,
+    forwardRef(() => JobsModule),
   ],
   providers: [RankingService, RankingAlgoService],
   controllers: [RankingController],

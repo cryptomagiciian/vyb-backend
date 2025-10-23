@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { IngestionProcessor } from './processors/ingestion.processor';
 import { RankingProcessor } from './processors/ranking.processor';
@@ -20,7 +20,7 @@ import { ResolutionModule } from '../resolution/resolution.module';
       { name: 'analytics' },
     ),
     ConnectorsModule,
-    RankingModule,
+    forwardRef(() => RankingModule),
     InsightsModule,
     ResolutionModule,
   ],
