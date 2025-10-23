@@ -9,6 +9,8 @@ import { setupTracing } from './common/tracing';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ErrorInterceptor } from './common/interceptors/error.interceptor';
 import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
+import { PrismaService } from './common/prisma/prisma.service';
+import { RedisService } from './common/redis/redis.service';
 
 async function bootstrap() {
   // Setup OpenTelemetry tracing if enabled
@@ -103,11 +105,11 @@ async function bootstrap() {
   app.getHttpAdapter().get('/healthz', async (req, res) => {
     try {
       // Check database connection
-      const prisma = app.get('PrismaService');
+      const prisma = app.get(PrismaService);
       await prisma.$queryRaw`SELECT 1`;
       
       // Check Redis connection
-      const redis = app.get('RedisService');
+      const redis = app.get(RedisService);
       await redis.ping();
       
       res.json({ 
