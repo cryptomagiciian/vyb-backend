@@ -43,13 +43,20 @@ async function bootstrap() {
   const corsOrigin = config.get('CORS_ORIGIN');
   app.enableCors({
     origin: process.env.NODE_ENV === 'production' 
-      ? [corsOrigin]
+      ? [
+          corsOrigin,
+          'https://lovable.dev',
+          'https://*.lovable.dev',
+          'https://*.lovable.app',
+          'https://*.lovableproject.com'
+        ]
       : [
           'http://localhost:3000',
           'http://localhost:3001', 
           'https://lovable.dev',
           'https://*.lovable.dev',
-          'https://*.lovable.app'
+          'https://*.lovable.app',
+          'https://*.lovableproject.com'
         ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
