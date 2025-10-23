@@ -21,7 +21,7 @@ import { ResolutionModule } from '../resolution/resolution.module';
     ),
     ConnectorsModule,
     forwardRef(() => RankingModule),
-    InsightsModule,
+    forwardRef(() => InsightsModule),
     ResolutionModule,
   ],
   providers: [

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InsightsService } from './insights.service';
 import { InsightsController } from './insights.controller';
@@ -11,7 +11,7 @@ import { JobsModule } from '../jobs/jobs.module';
     ConfigModule,
     PrismaModule,
     RedisModule,
-    JobsModule,
+    forwardRef(() => JobsModule),
   ],
   providers: [InsightsService],
   controllers: [InsightsController],
