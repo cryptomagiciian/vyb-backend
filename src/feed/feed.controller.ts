@@ -1,8 +1,9 @@
-import { Controller, Get, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { FeedService } from './feed.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RateLimitService } from '../common/rate-limit/rate-limit.service';
+import { ConnectorsService } from '../connectors/connectors.service';
 import { FeedRequestDto } from '../common/schemas/feed.schemas';
 
 @ApiTags('feed')
@@ -11,6 +12,7 @@ export class FeedController {
   constructor(
     private feedService: FeedService,
     private rateLimitService: RateLimitService,
+    private connectorsService: ConnectorsService,
   ) {}
 
   @Get('next')
@@ -75,4 +77,26 @@ export class FeedController {
       stats,
     };
   }
+
+  @Post('test-ingest')
+  @ApiOperation({ summary: 'Test market data ingestion (public - for testing)' })
+  @ApiResponse({ status: 200, description: 'Ingestion test completed' })
+  async testIngestion() {
+    try {
+      const results = await this.connectorsService.fetchAndStoreMarkets();
+      
+      return {
+        success: true,
+        message: 'Test ingestion completed',
+        results,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Test ingestion failed',
+        error: error.message,
+      };
+    }
+  }
+
 }
