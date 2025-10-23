@@ -29,7 +29,7 @@
     "reindex": "ts-node scripts/reindex.ts",
     "test:integration": "ts-node scripts/test-frontend-integration.ts",
     "generate:sdk": "openapi-typescript http://localhost:8080/docs-json -o ./sdk/types.ts",
-    "postbuild": "npm run generate:sdk",
+    "postbuild": "echo 'Build completed successfully'",
     "deploy:railway": "powershell -ExecutionPolicy Bypass -File scripts/deploy-railway-simple.ps1",
     "dev": "concurrently \"npm run start:dev\" \"npm run db:studio\"",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
