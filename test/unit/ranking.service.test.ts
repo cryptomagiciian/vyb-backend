@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RankingService } from '../../src/ranking/ranking.service';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import { RedisService } from '../../src/common/redis/redis.service';

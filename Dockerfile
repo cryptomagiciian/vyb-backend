@@ -19,8 +19,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code (excluding test files)
+COPY src ./src
+COPY prisma ./prisma
+COPY package.json ./
+COPY tsconfig.json ./
+COPY nest-cli.json ./
 
 # Generate Prisma client
 RUN npx prisma generate
