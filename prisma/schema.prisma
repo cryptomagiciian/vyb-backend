@@ -78,6 +78,8 @@ model MarketItem {
   insight       String?
   exchanges     Json      // [{name:"Polymarket", url:"..."}, {name:"Kalshi", url:"..."}]
   featuredAt    DateTime?
+  eligible      Boolean  @default(true)  // whether market is eligible for feed
+  outcome       String?  // 'YES', 'NO', 'UNKNOWN' - resolved outcome
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -85,6 +87,7 @@ model MarketItem {
 
   @@index([source, sourceId], name: "market_vendor_idx")
   @@index([confidence, trendScore, endDate], name: "market_rank_idx")
+  @@index([eligible], name: "market_eligible_idx")
   @@map("market_items")
 }
 

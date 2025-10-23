@@ -378,6 +378,91 @@ export class SwipesService {
   }
 
   /**
+   * Get user's swipe history (alias for getSwipeHistory)
+   */
+  async getUserSwipeHistory(
+    userId: string,
+    options: { limit?: number; cursor?: string } = {},
+  ) {
+    return this.getSwipeHistory(userId, options);
+  }
+
+  /**
+   * Get user's current streak
+   */
+  async getUserStreak(userId: string): Promise<number> {
+    try {
+      const cached = await this.redis.get(`user:${userId}:streak`);
+      if (cached) {
+        return parseInt(cached, 10);
+      }
+
+      // Get from database
+      const stats = await this.prisma.userStats.findUnique({
+        where: { userId },
+        select: { currentStreak: true },
+      });
+
+      const streak = stats?.currentStreak || 0;
+      await this.redis.set(`user:${userId}:streak`, streak, 3600);
+      return streak;
+    } catch (error) {
+      this.logger.error(`Failed to get user streak for ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get market swipe statistics
+   */
+  async getMarketSwipeStats(marketId: string): Promise<{
+    totalSwipes: number;
+    leftSwipes: number;
+    rightSwipes: number;
+    rightSwipeRatio: number;
+  }> {
+    try {
+      const [totalSwipes, leftSwipes, rightSwipes] = await Promise.all([
+        this.prisma.swipe.count({ where: { marketId } }),
+        this.prisma.swipe.count({ where: { marketId, direction: 'LEFT' } }),
+        this.prisma.swipe.count({ where: { marketId, direction: 'RIGHT' } }),
+      ]);
+
+      return {
+        totalSwipes,
+        leftSwipes,
+        rightSwipes,
+        rightSwipeRatio: totalSwipes > 0 ? rightSwipes / totalSwipes : 0,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get market swipe stats for ${marketId}:`, error);
+      return {
+        totalSwipes: 0,
+        leftSwipes: 0,
+        rightSwipes: 0,
+        rightSwipeRatio: 0,
+      };
+    }
+  }
+
+  /**
+   * Get user's prediction accuracy
+   */
+  async getUserAccuracy(userId: string): Promise<number> {
+    try {
+      const stats = await this.prisma.userStats.findUnique({
+        where: { userId },
+        select: { accuracy: true },
+      });
+
+      return stats?.accuracy || 0;
+    } catch (error) {
+      this.logger.error(`Failed to get user accuracy for ${userId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
    * Update streak cache in Redis for real-time updates
    */
   private async updateStreakCache(userId: string, streak: number): Promise<void> {

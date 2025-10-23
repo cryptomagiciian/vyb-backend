@@ -35,6 +35,7 @@ export const FeedResponseSchema = z.object({
 
 // Swipe Request DTO Schema
 export const SwipeRequestSchema = z.object({
+  idempotencyKey: z.string().optional(), // Idempotency key
   marketId: z.string().cuid(),
   direction: z.enum(['LEFT', 'RIGHT']),
   swipeToken: z.string().optional(), // Anti-replay token

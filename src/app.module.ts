@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { TerminusModule } from '@nestjs/terminus';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './auth/auth.module';
@@ -18,6 +19,7 @@ import { AdminModule } from './admin/admin.module';
 import { HealthController } from './common/health/health.controller';
 import { JobsModule } from './jobs/jobs.module';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module';
+import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
 
 @Module({
   imports: [
@@ -59,5 +61,11 @@ import { RateLimitModule } from './common/rate-limit/rate-limit.module';
     TerminusModule,
   ],
   controllers: [HealthController],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RateLimitInterceptor,
+    },
+  ],
 })
 export class AppModule {}

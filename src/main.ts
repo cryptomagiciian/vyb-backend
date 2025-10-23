@@ -68,7 +68,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     new ErrorInterceptor(),
-    new RateLimitInterceptor(),
+    // RateLimitInterceptor will be added as a global interceptor in app.module.ts
   );
 
   // Swagger documentation

@@ -30,7 +30,6 @@ export class UsersService {
       handle: user.handle,
       email: user.email,
       wallet: user.wallet,
-      role: user.role,
       avatarUrl: user.avatarUrl,
       region: user.region,
       createdAt: user.createdAt,
@@ -71,7 +70,6 @@ export class UsersService {
         handle: updatedUser.handle,
         email: updatedUser.email,
         wallet: updatedUser.wallet,
-        role: updatedUser.role,
         avatarUrl: updatedUser.avatarUrl,
         region: updatedUser.region,
         createdAt: updatedUser.createdAt,
@@ -98,7 +96,7 @@ export class UsersService {
 
     // Get current streak from Redis
     const currentStreak = await this.redis.get(`streak:${userId}`);
-    const streak = currentStreak ? parseInt(currentStreak, 10) : stats.streak;
+    const streak = currentStreak ? parseInt(currentStreak, 10) : stats.currentStreak;
 
     return {
       userId: stats.userId,
@@ -106,7 +104,7 @@ export class UsersService {
       streak,
       bestStreak: stats.bestStreak,
       accuracy: stats.accuracy,
-      lastActiveAt: stats.lastActiveAt,
+      lastActiveAt: new Date(), // Use current time as last active
     };
   }
 
@@ -176,18 +174,22 @@ export class UsersService {
         throw new NotFoundException('User stats not found');
       }
 
-      const [xpRank, streakRank, accuracyRank, totalUsers] = await Promise.all([
+      const [xpCount, streakCount, accuracyCount, totalUsers] = await Promise.all([
         this.prisma.userStats.count({
           where: { xp: { gt: userStats.xp } },
-        }) + 1,
+        }),
         this.prisma.userStats.count({
           where: { bestStreak: { gt: userStats.bestStreak } },
-        }) + 1,
+        }),
         this.prisma.userStats.count({
           where: { accuracy: { gt: userStats.accuracy } },
-        }) + 1,
+        }),
         this.prisma.userStats.count(),
       ]);
+
+      const xpRank = xpCount + 1;
+      const streakRank = streakCount + 1;
+      const accuracyRank = accuracyCount + 1;
 
       return {
         xpRank,
@@ -231,7 +233,7 @@ export class UsersService {
       handle: stat.user.handle,
       avatarUrl: stat.user.avatarUrl,
       xp: stat.xp,
-      streak: stat.streak,
+      streak: stat.currentStreak,
       bestStreak: stat.bestStreak,
       accuracy: stat.accuracy,
     }));
