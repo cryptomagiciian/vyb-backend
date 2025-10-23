@@ -85,8 +85,10 @@ export class ConnectorsService {
     return this.prisma.executeTransaction(async (prisma) => {
       const existing = await prisma.marketItem.findUnique({
         where: {
-          source: normalized.source.toUpperCase() as any,
-          externalId: normalized.externalId,
+          market_external_unique: {
+            source: normalized.source.toUpperCase() as any,
+            externalId: normalized.externalId,
+          },
         },
       });
 

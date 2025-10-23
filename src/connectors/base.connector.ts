@@ -1,12 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+
+// Extend AxiosRequestConfig to include metadata
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  metadata?: {
+    startTime?: number;
+    retryCount?: number;
+  };
+}
 import { Connector, ConnectorConfig, ConnectorHealth, ConnectorMetrics, ConnectorError } from './types';
 
 @Injectable()
-export abstract class BaseConnector implements Connector {
+export abstract class BaseConnector {
   protected readonly logger = new Logger(this.constructor.name);
-  protected readonly httpClient: AxiosInstance;
+  protected httpClient: AxiosInstance;
   protected metrics: ConnectorMetrics = {
     totalRequests: 0,
     successfulRequests: 0,
@@ -52,12 +60,12 @@ export abstract class BaseConnector implements Connector {
     this.httpClient.interceptors.response.use(
       (response) => {
         this.metrics.successfulRequests++;
-        this.updateLatencyMetrics(response.config.metadata?.startTime);
+        this.updateLatencyMetrics((response.config as ExtendedAxiosRequestConfig).metadata?.startTime);
         return response;
       },
       async (error: AxiosError) => {
         this.metrics.failedRequests++;
-        this.updateLatencyMetrics(error.config?.metadata?.startTime);
+        this.updateLatencyMetrics((error.config as ExtendedAxiosRequestConfig)?.metadata?.startTime);
         
         const connectorError = this.handleError(error);
         
@@ -82,7 +90,7 @@ export abstract class BaseConnector implements Connector {
   }
 
   private handleError(error: AxiosError): ConnectorError {
-    const connectorError = error as ConnectorError;
+    const connectorError = error as unknown as ConnectorError;
     
     if (error.response) {
       // Server responded with error status
@@ -135,7 +143,7 @@ export abstract class BaseConnector implements Connector {
   }
 
   private shouldRetry(error: AxiosError): boolean {
-    const retryCount = error.config?.metadata?.retryCount || 0;
+    const retryCount = (error.config as ExtendedAxiosRequestConfig)?.metadata?.retryCount || 0;
     return retryCount < this.config.retry.maxRetries;
   }
 

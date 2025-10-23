@@ -54,9 +54,9 @@ export class SwipesController {
   @ApiQuery({ name: 'limit', required: false, description: 'Number of swipes to return (1-100)', type: Number })
   @ApiQuery({ name: 'cursor', required: false, description: 'Pagination cursor' })
   async getSwipeHistory(
+    @Request() req,
     @Query('limit') limit: number = 50,
     @Query('cursor') cursor?: string,
-    @Request() req,
   ) {
     const result = await this.swipesService.getUserSwipeHistory(
       req.user.sub,

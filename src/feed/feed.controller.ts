@@ -74,7 +74,7 @@ export class FeedController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiQuery({ name: 'segment', required: false, description: 'Feed segment' })
   async getFeedStats(@Query('segment') segment: string = 'default') {
-    const stats = await this.feedService.getFeedStats(segment);
+    const stats = await this.feedService.getFeedStats();
     
     return {
       success: true,

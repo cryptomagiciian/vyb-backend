@@ -74,6 +74,7 @@ model MarketItem {
   liquidity     Float    @default(0)
   endDate       DateTime
   priceChange24 Float    @default(0)
+  lastChange24h Float    @default(0)  // alias for priceChange24
   mentionScore  Float    @default(0)  // social velocity
   confidence    Float    @default(0)  // our score 0..1
   trendScore    Float    @default(0)

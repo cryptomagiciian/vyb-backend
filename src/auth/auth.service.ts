@@ -60,7 +60,7 @@ export class AuthService {
       const rateLimitKey = `magic_link:${email}`;
       const isAllowed = await this.redis.checkRateLimit(rateLimitKey, {
         windowMs: 5 * 60 * 1000, // 5 minutes
-        maxRequests: 3,
+        limit: 3,
       });
 
       if (!isAllowed) {

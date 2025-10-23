@@ -322,37 +322,4 @@ export class FeedService {
     }
   }
 
-  /**
-   * Get feed statistics
-   */
-  async getFeedStats(): Promise<{
-    totalMarkets: number;
-    eligibleMarkets: number;
-    averageConfidence: number;
-    averageTrendScore: number;
-  }> {
-    try {
-      const [totalMarkets, eligibleMarkets, avgStats] = await Promise.all([
-        this.prisma.marketItem.count(),
-        this.prisma.marketItem.count({ where: { eligible: true } }),
-        this.prisma.marketItem.aggregate({
-          where: { eligible: true },
-          _avg: {
-            confidence: true,
-            trendScore: true,
-          },
-        }),
-      ]);
-
-      return {
-        totalMarkets,
-        eligibleMarkets,
-        averageConfidence: avgStats._avg.confidence || 0,
-        averageTrendScore: avgStats._avg.trendScore || 0,
-      };
-    } catch (error) {
-      this.logger.error('Failed to get feed stats:', error);
-      throw error;
-    }
-  }
 }
